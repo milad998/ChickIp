@@ -34,7 +34,7 @@ app.post("/check-raqaa", async (req, res) => {
 
   try {
     // تعيين IP ثابت
-    await setStaticIP("192.168.1.254");
+    await setStaticIP("192.166.168.254");
 
     // اختبار الاتصال بكل IP
     const results = await Promise.all(
@@ -66,7 +66,7 @@ app.post("/check-kobani", async (req, res) => {
 
   try {
     // تعيين IP ثابت
-    await setStaticIP("192.168.1.254");
+    await setStaticIP("192.166.163.254");
 
     // اختبار الاتصال بكل IP
     const results = await Promise.all(
