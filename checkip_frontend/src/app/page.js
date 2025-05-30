@@ -1,107 +1,94 @@
-import { useState } from "react";
 import Head from "next/head";
+import Link from "next/link";
 
 export default function Home() {
-  const [ipsInput, setIpsInput] = useState("");
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleCheck = async () => {
-    const ipList = ipsInput
-      .split(" ")
-      .map((ip) => ip.trim())
-      .filter((ip) => ip.length > 0);
-
-    if (ipList.length === 0) {
-      setError("يرجى إدخال عنوان IP واحد على الأقل.");
-      return;
-    }
-
-    setLoading(true);
-    setResults([]);
-    setError("");
-
-    try {
-      const res = await fetch("http://localhost:5000/check-raqaa", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ ips: ipList }),
-      });
-
-      const data = await res.json();
-      if (data.error) {
-        setError(data.error);
-      } else {
-        const disconnected = (data.results || []).filter((item) => !item.alive);
-        setResults(disconnected);
-      }
-    } catch (err) {
-      setError("حدث خطأ أثناء الاتصال بالخادم.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <>
       <Head>
-        <title>فحص عناوين IP</title>
+        <title>مرحباً بك</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        />
       </Head>
 
-      <div className="container py-5" dir="rtl">
-        <h2 className="mb-4 text-center">فحص اتصال عناوين IP</h2>
+      <style jsx>{`
+        .fade-in {
+          animation: fadeIn 1s ease-in forwards;
+        }
 
-        <div className="mb-3">
-          <label htmlFor="ipsInput" className="form-label">
-            أدخل عناوين IP مفصولة بمسافة
-          </label>
-          <textarea
-            id="ipsInput"
-            className="form-control"
-            rows="3"
-            value={ipsInput}
-            onChange={(e) => setIpsInput(e.target.value)}
-            placeholder="مثال: 192.168.1.1 192.168.1.2 10.0.0.1"
-          ></textarea>
+        .scale-in {
+          animation: scaleIn 1s ease-out forwards;
+        }
+
+        .pulse-on-hover:hover {
+          animation: pulse 0.6s infinite;
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes scaleIn {
+          0% {
+            transform: scale(0.7);
+            opacity: 0;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+      `}</style>
+
+      <div
+        className="min-vh-100 d-flex flex-column justify-content-center align-items-center text-center"
+        style={{
+          background: "linear-gradient(to right, #d4fc79, #96e6a1)",
+          padding: "2rem",
+        }}
+        dir="rtl"
+      >
+        <div className="bg-white shadow-lg rounded-4 p-5 fade-in" style={{ maxWidth: "500px", width: "100%" }}>
+          <div className="mb-3 scale-in">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/3208/3208707.png"
+              alt="Network Icon"
+              width="80"
+              height="80"
+            />
+          </div>
+
+          <h1 className="mb-3 text-success fw-bold">مرحباً بك في نظام فحص الشبكة</h1>
+          <p className="text-muted mb-4">
+            هذا النظام يتيح لك التحقق بسرعة من حالة الاتصال للأجهزة عبر الشبكة الداخلية.
+          </p>
+
+          <Link href="/ipcheck" className="btn btn-primary btn-lg pulse-on-hover">
+            🚀 ابدأ الفحص الآن
+          </Link>
         </div>
-
-        <button
-          onClick={handleCheck}
-          className="btn btn-primary"
-          disabled={loading}
-        >
-          {loading ? "جارٍ الفحص..." : "ابدأ الفحص"}
-        </button>
-
-        {error && (
-          <div className="alert alert-danger mt-3" role="alert">
-            {error}
-          </div>
-        )}
-
-        {!loading && results.length === 0 && ipsInput.trim() && !error && (
-          <div className="alert alert-success mt-3">
-            كل العناوين متصلة ✅
-          </div>
-        )}
-
-        {results.length > 0 && (
-          <div className="mt-4">
-            <h5>العناوين غير المتصلة:</h5>
-            <ul className="list-group">
-              {results.map(({ ip }) => (
-                <li key={ip} className="list-group-item list-group-item-danger">
-                  🔴 غير متصل - {ip}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
     </>
   );
-    }
+            }
