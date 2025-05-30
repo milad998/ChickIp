@@ -25,7 +25,7 @@ export default function IPChecker() {
     setError("");
 
     try {
-      const res = await fetch(`http://localhost:5000/check-${location}`, {
+      const res = await fetch(`http://localhost:4000/check-${location}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ips: ipList }),
