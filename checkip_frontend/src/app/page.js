@@ -1,95 +1,107 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import { useState } from "react";
+import Head from "next/head";
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [ipsInput, setIpsInput] = useState("");
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+  const handleCheck = async () => {
+    const ipList = ipsInput
+      .split(" ")
+      .map((ip) => ip.trim())
+      .filter((ip) => ip.length > 0);
+
+    if (ipList.length === 0) {
+      setError("يرجى إدخال عنوان IP واحد على الأقل.");
+      return;
+    }
+
+    setLoading(true);
+    setResults([]);
+    setError("");
+
+    try {
+      const res = await fetch("http://localhost:5000/check-raqaa", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ips: ipList }),
+      });
+
+      const data = await res.json();
+      if (data.error) {
+        setError(data.error);
+      } else {
+        const disconnected = (data.results || []).filter((item) => !item.alive);
+        setResults(disconnected);
+      }
+    } catch (err) {
+      setError("حدث خطأ أثناء الاتصال بالخادم.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Head>
+        <title>فحص عناوين IP</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
+
+      <div className="container py-5" dir="rtl">
+        <h2 className="mb-4 text-center">فحص اتصال عناوين IP</h2>
+
+        <div className="mb-3">
+          <label htmlFor="ipsInput" className="form-label">
+            أدخل عناوين IP مفصولة بمسافة
+          </label>
+          <textarea
+            id="ipsInput"
+            className="form-control"
+            rows="3"
+            value={ipsInput}
+            onChange={(e) => setIpsInput(e.target.value)}
+            placeholder="مثال: 192.168.1.1 192.168.1.2 10.0.0.1"
+          ></textarea>
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+
+        <button
+          onClick={handleCheck}
+          className="btn btn-primary"
+          disabled={loading}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          {loading ? "جارٍ الفحص..." : "ابدأ الفحص"}
+        </button>
+
+        {error && (
+          <div className="alert alert-danger mt-3" role="alert">
+            {error}
+          </div>
+        )}
+
+        {!loading && results.length === 0 && ipsInput.trim() && !error && (
+          <div className="alert alert-success mt-3">
+            كل العناوين متصلة ✅
+          </div>
+        )}
+
+        {results.length > 0 && (
+          <div className="mt-4">
+            <h5>العناوين غير المتصلة:</h5>
+            <ul className="list-group">
+              {results.map(({ ip }) => (
+                <li key={ip} className="list-group-item list-group-item-danger">
+                  🔴 غير متصل - {ip}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </>
   );
-}
+    }
