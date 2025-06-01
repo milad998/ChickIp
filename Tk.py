@@ -4,7 +4,7 @@ import subprocess
 import threading
 
 # اسم كرت الشبكة (يجب تعديله حسب جهازك)
-ADAPTER_NAME = "Ethernet"
+ADAPTER_NAME = "Realte PCIe GBE Family Controller"
 
 # --------------------- الدوال ---------------------
 
@@ -15,7 +15,7 @@ def change_ip():
         return
     try:
         subprocess.run(
-            f'wmic nicconfig where "Description like \'%{ADAPTER_NAME}%\'" call EnableStatic("{new_ip}", "255.255.255.0")',
+            f'wmic nicconfig where "Description like \'%{ADAPTER_NAME}%\'" call EnableStatic ("{new_ip}", "255.255.255.0")',
             shell=True, check=True
         )
         messagebox.showinfo("نجاح", f"✅ تم تغيير عنوان IP إلى: {new_ip}")
